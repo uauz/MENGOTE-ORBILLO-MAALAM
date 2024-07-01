@@ -1,0 +1,131 @@
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import javax.swing.JOptionPane;
+
+public class MainApp {
+    private Frame frame;
+    private Panel inputPanel;
+    private Panel listPanel;
+    private Panel totalPanel;
+
+    private TextField itemField;
+    private TextField priceField;
+    private TextArea listArea;
+    private Label totalLabel;
+
+    private ArrayList<String> items;
+    private ArrayList<Double> prices;
+
+    public MainApp() {
+        frame = new Frame("Shopping List");
+        frame.setSize(400, 400);
+        frame.setLayout(new BorderLayout());
+
+        inputPanel = new Panel();
+        frame.setBackground(Color.GREEN);
+        inputPanel.setLayout(new GridLayout(3, 2, 10, 10));
+
+        itemField = new TextField(20);
+        priceField = new TextField(10);
+
+        Button addButton = new Button("Add Item");
+        addButton.addActionListener(new AddButtonClickListener());
+
+        inputPanel.add(new Label("Item:"));
+        inputPanel.add(itemField);
+        inputPanel.add(new Label("Price:"));
+        inputPanel.add(priceField);
+        inputPanel.add(new Label()); // Empty space
+        inputPanel.add(addButton);
+
+        frame.add(inputPanel, BorderLayout.NORTH);
+        frame.setBackground(Color.YELLOW );
+
+        listPanel = new Panel();
+        listPanel.setLayout(new BorderLayout());
+
+        listArea = new TextArea();
+        listArea.setEditable(false);
+        listPanel.add(listArea, BorderLayout.CENTER);
+
+        frame.add(listPanel, BorderLayout.CENTER);
+
+        totalPanel = new Panel();
+        totalPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+
+        totalLabel = new Label("Total: $0.00");
+        totalPanel.add(totalLabel);
+
+        frame.add(totalPanel, BorderLayout.SOUTH);
+
+        items = new ArrayList<>();
+        prices = new ArrayList<>();
+
+        frame.setVisible(true);
+    }
+
+    private class AddButtonClickListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String item = itemField.getText();
+            String priceStr = priceField.getText();
+
+            if (!item.isEmpty() && isValidPrice(priceStr)) {
+                double price = Double.parseDouble(priceStr);
+                items.add(item);
+                prices.add(price);
+
+                updateListArea();
+                updateTotal();
+                clearFields();
+            } else {
+                showMessage("Please enter valid item and price.");
+            }
+        }
+
+        private boolean isValidPrice(String priceStr) {
+            try {
+                double price = Double.parseDouble(priceStr);
+                return price >= 0;
+            } catch (NumberFormatException ex) {
+                return false;
+            }
+        }
+
+        private void updateListArea() {
+            listArea.setText("");
+            DecimalFormat df = new DecimalFormat("#0.00");
+
+            for (int i = 0; i < items.size(); i++) {
+                String item = items.get(i);
+                double price = prices.get(i);
+                listArea.append(item + ": $" + df.format(price) + "\n");
+            }
+        }
+
+        private void updateTotal() {
+            double total = 0;
+            for (double price : prices) {
+                total += price;
+            }
+            DecimalFormat df = new DecimalFormat("#0.00");
+            totalLabel.setText("Total: $" + df.format(total));
+        }
+
+        private void clearFields() {
+            itemField.setText("");
+            priceField.setText("");
+            itemField.requestFocus();
+        }
+
+        private void showMessage(String message) {
+            JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+    public static void main(String[] args) {
+        new MainApp();
+    }
+}
